@@ -61,9 +61,28 @@ def vecsub(vector_1,vector_2):
         tmp[i]+=vector_2[i]
     return tmp
 
+def vecones(length):
+    vector = []
+    for _ in range(length):
+        vector.append(1)
+    return vector
+
+def veczeros(length):
+    vector = []
+    for _ in range(length):
+        vector.append(0)
+    return vector
+
 def normalization(vector):
     i = 0
     for el in vector:
         i+=el**2
     return i**0.5
-        
+
+def diagToSquare(vector):
+    size = len(vector)
+    result_matrix = [[0] * size for _ in range(size)]  # Initialize the square matrix
+    for i in range(size):
+        result_matrix[i][i] = vector[i]  # Assign diagonal elements from the vector
+    return result_matrix
+
