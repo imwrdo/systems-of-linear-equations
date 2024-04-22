@@ -48,3 +48,22 @@ def matsub(matrix1, matrix2):
 def matzeros(rows, cols):
     zero_matrix = [[0] * cols for _ in range(rows)]
     return zero_matrix
+
+def veccopy(vector):
+    copy = []
+    for el in vector:
+        copy.append(el)
+    return copy
+
+def vecsub(vector_1,vector_2):
+    tmp = veccopy(vector_1)
+    for i in range(len(tmp)):
+        tmp[i]+=vector_2[i]
+    return tmp
+
+def normalization(vector):
+    i = 0
+    for el in vector:
+        i+=el**2
+    return i**0.5
+        
