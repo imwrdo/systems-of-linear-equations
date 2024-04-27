@@ -11,7 +11,7 @@ e = int(index_number/100)%10 #2
 f = int(index_number/1000)%10 #1
 a1 = 5 + e
 a2 = a3 = -1
-N = 9 * c *  d
+N = 967 #9cd
 
 def createMatrix(a1,a2,a3,N):
     A = []
@@ -31,19 +31,20 @@ def createMatrix(a1,a2,a3,N):
 
 def createVector(N,f):
     b = []
-    for i in range(N):
-            b.append(sin(i * (f + 1)))
+    for n in range(N):
+            b.append(sin((n+1) * (f + 1)))
     return b
             
 # B task
-def jacobiMethod(A, b, tol=1e-9, max_iter=3000):
+def jacobiMethod(A, b):
     startTime = time.time()
     matA = meth.matcopy(A)
     vecB = meth.veccopy(b)
     k = 0 
     n = len(matA)
     x = [0] * n  # Initial guess for the solution vector
-    while k < max_iter:
+    residuals = []  # List to store residuals for each iteration
+    while True:
         x_new = [0] * n  # Temporary storage for updated solution vector
         for i in range(n):
             summation = 0
@@ -54,9 +55,10 @@ def jacobiMethod(A, b, tol=1e-9, max_iter=3000):
         
         # Calculate the residual vector
         residual = [vecB[i] - sum(matA[i][j] * x_new[j] for j in range(n)) for i in range(n)]
+        residuals.append(meth.normalization(residual))
         
         # Check convergence
-        if all(abs(element) < tol for element in residual):
+        if meth.normalization(residual)<1e-9:
             break
         
         # Update the solution vector
@@ -67,7 +69,7 @@ def jacobiMethod(A, b, tol=1e-9, max_iter=3000):
     print('time:', time.time() - startTime)
     print('iterations:', k)
     print()
-    return time.time() - startTime
+    return time.time() - startTime , residuals
 
         
 def gaussSeidelMethod(A, b):
@@ -77,6 +79,7 @@ def gaussSeidelMethod(A, b):
     k = 0
     n = len(matA)
     vecX = [0] * n
+    residuals = []
     while True:
         for i in range(n):
             tmp = vecB[i]
@@ -86,22 +89,23 @@ def gaussSeidelMethod(A, b):
             tmp /= matA[i][i]
             vecX[i] = tmp
         
-        res = [vecB[i] - sum(matA[i][j] * vecX[j] for j in range(n)) for i in range(n)]
-        
-        if meth.normalization(res) < 1e-9:
+        residual = [vecB[i] - sum(matA[i][j] * vecX[j] for j in range(n)) for i in range(n)]
+        residuals.append(meth.normalization(residual))
+        if meth.normalization(residual) < 1e-9:
             break
         k += 1
     
     print("Gauss-Seidel's method")
-    print("time:", time.time() - startTime)
+    print("Time taken:", time.time() - startTime,"s")
     print("iterations:", k)
     print()
-    return time.time() - startTime
+    return time.time() - startTime, residuals
+
 # C task 
 a1_D = 3
 a2_D = a3_D = -1 
-# D task 
 
+# D task 
 def luFactoryzationMethod(A, b):
     # Initialize variables and matrices
     startTime = time.time()
@@ -149,7 +153,7 @@ def luFactoryzationMethod(A, b):
 
     # Print results
     print("LU method")
-    print('Time taken:', time.time() - startTime)
+    print('Time taken:', time.time() - startTime,'s')
     print("Residual norm:", meth.normalization(res))
     print()
 
@@ -160,8 +164,22 @@ def luFactoryzationMethod(A, b):
 A = createMatrix(a1,a2,a3,N)
 b = createVector(N,f)
 # B task
-jacobiMethod(A,b)
-gaussSeidelMethod(A,b)
+print("Zadanie B:\n")
+
+jacobi_time, jacobi_residuals = jacobiMethod(A, b)
+gauss_time, gauss_residuals = gaussSeidelMethod(A, b)
+
+plt.figure(figsize=(10, 6))
+plt.semilogy(range(len(jacobi_residuals)), jacobi_residuals, label="Jacobi's Method")
+plt.semilogy(range(len(gauss_residuals)), gauss_residuals, label="Gauss-Seidel's Method")
+plt.axhline(y=1e-9,color='g',linestyle='--',label="Residum limit")
+plt.xlabel("Iteration")
+plt.ylabel("Residual Norm")
+plt.title("Convergence of Iterative Methods")
+plt.legend()
+plt.grid(True)
+plt.show()
+print("Koniec")
 # C task
 C = createMatrix(a1_D,a2_D,a3_D,N)
 #jacobiMethod(C,b) #error
@@ -180,10 +198,14 @@ for n in N:
     print("Size:", n)
     matrix_A = createMatrix(a1,a2,a3,n)
     vector_b = createVector(n,f)
-
-    timeJacobi.append(jacobiMethod(matrix_A, vector_b))
-    timeGauss.append(gaussSeidelMethod(matrix_A, vector_b))
-    timeLU.append(luFactoryzationMethod(matrix_A, vector_b))
+    
+    jacobi_time, _ = jacobiMethod(matrix_A, vector_b)
+    gauss_time, _ = gaussSeidelMethod(matrix_A, vector_b)   
+    LU_time = luFactoryzationMethod(matrix_A, vector_b)
+    
+    timeJacobi.append(jacobi_time)
+    timeGauss.append(gauss_time)
+    timeLU.append(LU_time)
 
 plt.plot(N, timeJacobi, label="Jacobi", color="red")
 plt.plot(N, timeGauss, label="Gauss-Seidel", color="blue")
@@ -194,3 +216,8 @@ plt.ylabel('Czas (s)')
 plt.xlabel('Liczba niewiadomych')
 plt.title('Zależność czasu od liczby niewiadomych')
 plt.show()
+
+
+
+
+
