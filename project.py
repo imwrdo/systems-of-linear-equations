@@ -3,7 +3,7 @@ import time
 from matplotlib import pyplot as plt
 import methods as meth
 
-# A task 
+# Zadanie A 
 index_number = 201267
 d = index_number % 10 #7
 c = int(index_number/10)%10 #6
@@ -35,7 +35,7 @@ def createVector(N,f):
             b.append(sin((n+1) * (f + 1)))
     return b
             
-# B task
+# Zadanie B
 def jacobiMethod(A, b,iterations=3000):
     startTime = time.time()
     matA = meth.matcopy(A)
@@ -44,14 +44,12 @@ def jacobiMethod(A, b,iterations=3000):
     n = len(matA)
     x = meth.vecones(n)  # Initial guess for the solution vector
     residuals = []  # List to store residuals for each iteration
-    while k<iterations:
-        x_new = meth.veczeros(n)  # Temporary storage for updated solution vector
+    while True:
+        x_new = meth.vecones(n)  # Temporary storage for updated solution vector
         for i in range(n):
-            summation = 0
-            for j in range(n):
-                if j != i:
-                    summation += matA[i][j] * x[j]
-            x_new[i] = (vecB[i] - summation) / matA[i][i]
+            sigma1 = sum(A[i][j] * x[j] for j in range(i))
+            sigma2 = sum(A[i][j] * x[j] for j in range(i + 1, n))
+            x_new[i] = (vecB[i] - sigma1-sigma2) / matA[i][i]
         
         # Calculate the residual vector
         residual = [sum(matA[i][j] * x_new[j] for j in range(n)) - vecB[i] for i in range(n)]
@@ -80,14 +78,12 @@ def gaussSeidelMethod(A, b,iterations=3000):
     n = len(matA)
     vecX = meth.vecones(n)
     residuals = []
-    while k < iterations:
+    while True:
+        x = vecX.copy()
         for i in range(n):
-            tmp = vecB[i]
-            for j in range(n):
-                if i != j:
-                    tmp -= matA[i][j] * vecX[j] 
-            tmp /= matA[i][i]
-            vecX[i] = tmp
+            sigma1 = sum(A[i][j] * vecX[j] for j in range(i))
+            sigma2 = sum(A[i][j] * x[j] for j in range(i + 1, n))
+            vecX[i] = (b[i] - sigma1 - sigma2) / A[i][i]
         
         residual = [sum(matA[i][j] * vecX[j] for j in range(n)) - vecB[i] for i in range(n)]
         residuals.append(meth.normalization(residual))
@@ -101,13 +97,12 @@ def gaussSeidelMethod(A, b,iterations=3000):
     print()
     return time.time() - startTime, residuals
 
-# C task 
+# Zadanie C 
 a1_D = 3
 a2_D = a3_D = -1 
 
-# D task 
+# Zadanie D 
 def luFactoryzationMethod(A, b):
-    # Initialize variables and matrices
     startTime = time.time()
     n = len(A)
 
@@ -119,7 +114,7 @@ def luFactoryzationMethod(A, b):
     vecX = meth.vecones(n)
     vecY = meth.veczeros(n)
 
-    # 1. Perform LU decomposition: LUx = b
+    # LUx = b
     for j in range(n):
         # Calculate U elements
         for i in range(j + 1):
@@ -134,14 +129,14 @@ def luFactoryzationMethod(A, b):
             mat_l[i][j] += matA[i][j]
             mat_l[i][j] /= mat_u[j][j]
 
-    # 3. Solve Ly = b
+    # Ly = b
     for i in range(n):
         value = vecB[i]
         for j in range(i):
             value -= mat_l[i][j] * vecY[j]
         vecY[i] = value / mat_l[i][i]
 
-    # 4. Solve Ux = y
+    # Ux = y
     for i in range(n - 1, -1, -1):
         value = vecY[i]
         for j in range(i + 1, n):
@@ -159,12 +154,12 @@ def luFactoryzationMethod(A, b):
 
     return time.time() - startTime
 
-# Using:
-# A task
+# Wykorzystanie:
+# Zadanie A
 A = createMatrix(a1,a2,a3,N)
 b = createVector(N,f)
 
-# B task
+# Zadanie B
 print("Zadanie B:\n")
 
 jacobi_time_B, jacobi_residuals_B = jacobiMethod(A, b)
@@ -182,7 +177,7 @@ plt.grid(True)
 plt.show()
 print("Koniec")
 
-# C task
+# Zadanie C
 print("Zadanie C:\n")
 C = createMatrix(a1_D,a2_D,a3_D,N)
 jacobi_time_C, jacobi_residuals_C = jacobiMethod(C, b,500)
@@ -199,10 +194,10 @@ plt.grid(True)
 plt.show()
 print("Koniec")
 
-# D task
+# Zadanie D
 luFactoryzationMethod(C,b)
 
-# E task
+# Zadanie E         
 N = [100, 500, 1000, 1200,1500]
 timeJacobi = []
 timeGauss = []
